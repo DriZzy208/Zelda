@@ -27,9 +27,6 @@ function _draw()
  _drw()
  cursor(4,4)
  color(8)
- for txt in all(debug) do
-  print(txt)
- end
 end
 
 function startgame()
@@ -53,7 +50,7 @@ function startgame()
  
  wind={}
  float={}
- talkwind=nil 
+ ininventory=nil 
  _upd=update_game
  _drw=draw_game
 
@@ -64,17 +61,19 @@ function map_setup()
 	explosion=0
 	mx,my=0,0
 	cx,cy=0,0
- 	transition_speed=0.20
+ 	transition_speed=0.18
+    topleftcornerx=0
+    topleftcornery=0
    end
 
 --updates
 function update_game()
     update_map()
     update_camera()
-    if talkwind then
+    if ininventory then
         if getbutt()==5 then
-        talkwind.dur=0
-        talkwind=nil
+        ininventory.dur=0
+        ininventory=nil
         end
     else
         dobuttmem()
@@ -100,6 +99,8 @@ end
 function update_map()
     mx=flr(p_mob.x/16)*16
     my=flr(p_mob.y/16)*16	
+    topleftcornerx=mx
+    topleftcornery=my
 end
 
 function update_camera()
@@ -112,7 +113,6 @@ function update_camera()
     cx+=cx_diff
     cy+=cy_diff
     camera(cx,cy)
-    draw_ui(mx, my)
 end
 
 function update_aiturn()
@@ -163,6 +163,7 @@ function draw_game()
  cls(0)
  map(0,0,0,0,128,64)
  update_camera()
+ draw_ui()
  --drawspr(getframe(p_ani),p_x*8+p_ox,p_y*8+p_oy,10,p_flip)
  for m in all(dmob) do
   if sin(time()*8)>0 then
@@ -195,37 +196,33 @@ function drawmob(m)
  drawspr(getframe(m.ani),m.x*8+m.ox,m.y*8+m.oy,col,m.flp)
 end
 
-function draw_ui(_x, _y)
-    local heartposx = _x
-    local heartposy = _y
-    local lootposx = _x
-    local lootposy = _y
-    draw_heart(heartposx,heartposy)
-    draw_loot(lootposx,lootposy)
+function draw_ui()
+    draw_heart()
+    draw_loot()
 end
 
-function draw_heart(x,y)
-    local heartx=x
-    local hearty=y
-    for q=0,p_mob.hp do 
+function draw_heart()
+    local heartx=topleftcornerx
+    local hearty=topleftcornery
+    for q=1,p_mob.hp do 
         spr(17,heartx*8, hearty*8)
         heartx+=1
     end
 end
 
-function draw_loot(x, y)
-    --line(x,y,x,y,15)
-    --print("u ded",x+25,y+25,7)
-
-    
+function draw_loot()
+    local lootx=topleftcornerx
+    local looty=topleftcornery+1
+    line((lootx+2)*8,(looty+16)*8,(lootx+2)*8,looty+88,7)
+    line((lootx+2)*8,(looty+10)*8,(lootx+14)*8,(looty+10)*8,7)
 end
 
 function draw_gameover()
- cls(2)
- print("u ded",50,50,7)
+ cls()
+ print("u ded",topleftcornerx+5,topleftcornery+5,7)
  
 end
--->8
+
 --tools
 
 function getframe(ani)
