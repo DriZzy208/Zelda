@@ -50,7 +50,7 @@ function startgame()
  
  wind={}
  float={}
- ininventory=nil 
+ ininventory=false
  _upd=update_game
  _drw=draw_game
 
@@ -72,8 +72,7 @@ function update_game()
     update_camera()
     if ininventory then
         if getbutt()==5 then
-        ininventory.dur=0
-        ininventory=nil
+        ininventory=false
         end
     else
         dobuttmem()
@@ -152,6 +151,9 @@ end
 
 function dobutt(butt)
  if butt<0 then return end
+ if butt==❎ then
+  ininventory=true
+ end
  if butt<4 then
   moveplayer(dirx[butt+1],diry[butt+1])
  end
@@ -197,8 +199,12 @@ function drawmob(m)
 end
 
 function draw_ui()
-    draw_heart()
-    draw_loot()
+    if(ininventory) then
+        draw_invbox()
+        draw_inv_extended()
+    else 
+        draw_inv()
+    end
 end
 
 function draw_heart()
@@ -210,17 +216,47 @@ function draw_heart()
     end
 end
 
-function draw_loot()
-    local lootx=topleftcornerx
-    local looty=topleftcornery+1
-    line((lootx+2)*8,(looty+16)*8,(lootx+2)*8,looty+88,7)
-    line((lootx+2)*8,(looty+10)*8,(lootx+14)*8,(looty+10)*8,7)
+function draw_lootbox()
+    local lootboxx=topleftcornerx
+    local lootboxy=topleftcornery+1
+    --left white line
+    line((lootboxx+2)*8,(lootboxy+16)*8,(lootboxx+2)*8,((lootboxy+10)*8)+1,7)
+    --top white line
+    line(lootboxx+17,(lootboxy+10)*8,((lootboxx+14)*8)-1,(lootboxy+10)*8,7)
+    --right brown line 
+    line((lootboxx+14)*8,(lootboxy+16)*8,(lootboxx+14)*8,((lootboxy+10)*8)+1,4)
+    --right black line
+    line(((lootboxx+14)*8)+1,(lootboxy+16)*8,((lootboxx+14)*8)+1,((lootboxy+10)*8)+2,0)
+    --beige rectangle
+    rectfill(((lootboxx+2)*8)+1,((lootboxy+10)*8)+1,((lootboxx+14)*8)-1,((lootboxy+16)*8)-1,15)
+    --top right black line
+    line(((lootboxx+14)*8)-3,((lootboxy+10)*8)-1,((lootboxx+14)*8)-3,((lootboxy+10)*8)-6,0)
+    --top right brown line
+    line(((lootboxx+14)*8)-4,((lootboxy+10)*8)-1,((lootboxx+14)*8)-4,((lootboxy+10)*8)-7,4)
+    --top right top white line
+    line(((lootboxx+14)*8)-17,((lootboxy+10)*8)-8,((lootboxx+14)*8)-5,((lootboxy+10)*8)-8,7)
+    --top right left white line
+    line(((lootboxx+14)*8)-18,((lootboxy+10)*8)-1,((lootboxx+14)*8)-18,((lootboxy+10)*8)-7,7)
+    --top right middle beige rectangle
+    rectfill(((lootboxx+14)*8)-17,((lootboxy+10)*8)-7,((lootboxx+14)*8)-5,((lootboxy+10)*8)-1,15)
+    print("❎",((lootboxx+14)*8)-14,((lootboxy+10)*8)-6,2)
+end
+
+function draw_inv()
+    draw_heart()
+    draw_items()
+end
+
+function draw_inv_extended()
+    draw_heart()
+    draw_armor()
+    draw_items()
+    draw_money()
 end
 
 function draw_gameover()
  cls()
  print("u ded",topleftcornerx+5,topleftcornery+5,7)
- 
 end
 
 --tools
