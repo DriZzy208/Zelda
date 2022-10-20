@@ -2,57 +2,56 @@ pico-8 cartridge // http://www.pico-8.com
 version 38
 __lua__
 function _init()
- t=0
- p_ani={60,61,62,63}
+    t=0
+    p_ani={60,61,62,63}
  
- dirx={-1,1,0,0,1,1,-1,-1}
- diry={0,0,-1,1,-1,1,1,-1}
+    dirx={-1,1,0,0,1,1,-1,-1}
+    diry={0,0,-1,1,-1,1,1,-1}
  
- mob_ani={60,44}
- mob_atk={1,1}
- mob_hp ={5,2}
+    mob_ani={60,44}
+    mob_atk={1,1}
+    mob_hp ={5,2}
  
- debug={}
- startgame()
+    debug={}
+    startgame()
  
 end
 
 function _update60()
- t+=1
- _upd()
- dofloats()
+    t+=1
+    _upd()
+    dofloats()
 end
 
 function _draw()
- _drw()
- cursor(4,4)
- color(8)
+    _drw()
+    cursor(4,4)
+    color(8)
 end
 
 function startgame()
- buttmem=-1
- map_setup()
- mob={}
- dmob={}
- p_mob=addmob(1,1,1)
+    buttmem=-1
+    map_setup()
+    mob={}
+    dmob={}
+    p_mob=addmob(1,1,1)
+    aimovement=0
+    for x=0,15 do
+        for y=0,15 do
+            if mget(x,y)==3 then
+                addmob(2,x,y)
+                mset(x,y,16)
+            end
+        end
+    end
  
- for x=0,15 do
-  for y=0,15 do
-   if mget(x,y)==3 then
-    addmob(2,x,y)
-    mset(x,y,16)
-   end
-  end
- end
+    p_t=0
  
-
- p_t=0
- 
- wind={}
- float={}
- ininventory=false
- _upd=update_game
- _drw=draw_game
+    wind={}
+    float={}
+    ininventory=false
+    _upd=update_game
+    _drw=draw_game
 
 end
 
@@ -82,17 +81,17 @@ function update_game()
 end
 
 function update_pturn()
- dobuttmem()
- p_t=min(p_t+0.125,1)
+    dobuttmem()
+    p_t=min(p_t+0.125,1)
 
- p_mob.mov(p_mob,p_t)
+    p_mob.mov(p_mob,p_t)
  
- if p_t==1 then
-  _upd=update_game
-  if checkend() then
-   doai()
-  end
- end
+    if p_t==1 then
+        _upd=update_game
+        if checkend() then
+            doai()
+        end
+    end
 end
 
 function update_map()
@@ -115,87 +114,93 @@ function update_camera()
 end
 
 function update_aiturn()
- dobuttmem()
- p_t=min(p_t+0.125,1)
- for m in all(mob) do
-  if m!=p_mob and m.mov then
-   m.mov(m,p_t)
-  end
- end
- if p_t==1 then
-  _upd=update_game
-  checkend()
- end
+    dobuttmem()
+    p_t=min(p_t+0.125,1)
+    for m in all(mob) do
+        if m!=p_mob and m.mov then
+            m.mov(m,p_t)
+        end
+    end
+
+    if p_t==1 then
+        _upd=update_game
+        checkend()
+    end
 end
 
 function update_gameover()
- if btnp(❎) then
-  startgame()
- end
+    if btnp(❎) then
+        startgame()
+    end
 end
 
 function dobuttmem()
- if buttmem==-1 then
-  buttmem=getbutt()
- end
+    if buttmem==-1 then
+        buttmem=getbutt()
+    end
 end
 
 function getbutt()
- for i=0,5 do
-  if btnp(i) then
-   return i
-  end
- end
- return -1
+    for i=0,5 do
+        if btnp(i) then
+            return i
+        end
+    end
+
+    return -1
 end
 
 function dobutt(butt)
- if butt<0 then return end
- if butt==❎ then
-  ininventory=true
- end
- if butt<4 then
-  moveplayer(dirx[butt+1],diry[butt+1])
- end
- -- menu button
+    if butt<0 then return end
+    if butt==❎ then
+        ininventory=true
+    end
+    if butt<4 then
+        moveplayer(dirx[butt+1],diry[butt+1])
+        aimovement+=1
+    end
+    -- menu button
 end
 
---draws
 function draw_game()
- cls(0)
- map(0,0,0,0,128,64)
- update_camera()
- draw_ui()
- --drawspr(getframe(p_ani),p_x*8+p_ox,p_y*8+p_oy,10,p_flip)
- for m in all(dmob) do
-  if sin(time()*8)>0 then
-   drawmob(m)
-  end
-  m.dur-=1
-  if m.dur<=0 then
-   del(dmob,m)
-  end
- end
+    cls(0)
+    map(0,0,0,0,128,64)
+    update_camera()
+    draw_ui()
+    --drawspr(getframe(p_ani),p_x*8+p_ox,p_y*8+p_oy,10,p_flip)
+    for m in all(dmob) do
+        if sin(time()*8)>0 then
+        drawmob(m)
+    end
 
- for m in all(mob) do
-  if m!=p_mob then
-   drawmob(m)
-  end
- end
- drawmob(p_mob)
+    m.dur-=1
+
+    if m.dur<=0 then
+        del(dmob,m)
+    end 
+    end
+
+    for m in all(mob) do
+        if m!=p_mob then
+            drawmob(m)
+        end
+    end
+
+    drawmob(p_mob)
  
- for f in all(float) do
-  oprint8(f.txt,f.x,f.y,f.c,0)
- end
+    for f in all(float) do
+        oprint8(f.txt,f.x,f.y,f.c,0)
+    end
 end
 
 function drawmob(m)
- local col=10
- if m.flash>0 then
-  m.flash-=1
-  col=7
- end
- drawspr(getframe(m.ani),m.x*8+m.ox,m.y*8+m.oy,col,m.flp)
+    local col=10
+    if m.flash>0 then
+        m.flash-=1
+        col=7
+    end
+
+    drawspr(getframe(m.ani),m.x*8+m.ox,m.y*8+m.oy,col,m.flp)
 end
 
 function draw_ui()
@@ -267,261 +272,258 @@ function draw_money()
 end
 
 function draw_gameover()
- cls()
- print("u ded",topleftcornerx+5,topleftcornery+5,7)
+    cls()
+    print("u ded",topleftcornerx+5,topleftcornery+5,7)
 end
 
---tools
-
 function getframe(ani)
- return ani[flr(t/15)%#ani+1]
+    return ani[flr(t/15)%#ani+1]
 end
 
 function drawspr(_spr,_x,_y,_c,_flip)
- spr(_spr,_x,_y,1,1,_flip)
+    spr(_spr,_x,_y,1,1,_flip)
 end
 
 function rectfill2(_x,_y,_w,_h,_c)
- --★
- rectfill(_x,_y,_x+max(_w-1,0),_y+max(_h-1,0),_c)
+    --★
+    rectfill(_x,_y,_x+max(_w-1,0),_y+max(_h-1,0),_c)
 end
 
 function oprint8(_t,_x,_y,_c,_c2)
- for i=1,8 do
-  print(_t,_x+dirx[i],_y+diry[i],_c2)
- end 
- print(_t,_x,_y,_c)
+    for i=1,8 do
+        print(_t,_x+dirx[i],_y+diry[i],_c2)
+    end
+
+    print(_t,_x,_y,_c)
 end
 
 function dist(fx,fy,tx,ty)
- local dx,dy=fx-tx,fy-ty
- return sqrt(dx*dx+dy*dy)
+    local dx,dy=fx-tx,fy-ty
+    return sqrt(dx*dx+dy*dy)
 end
 
 function wait(_wait)
- repeat
-  _wait-=1
-  flip()
- until _wait<0
+    repeat
+    _wait-=1
+    flip()
+    until _wait<0
 end
 
--->8
---gameplay
-
 function moveplayer(dx,dy)
- local destx,desty=p_mob.x+dx,p_mob.y+dy
- local tle=mget(destx,desty)
+    local destx,desty=p_mob.x+dx,p_mob.y+dy
+    local tle=mget(destx,desty)
   
- if iswalkable(destx,desty,"checkmobs") then
-  sfx(63)
-  mobwalk(p_mob,dx,dy)
-  p_t=0
-  _upd=update_pturn
- else
-  --not walkable
-  mobbump(p_mob,dx,dy)
-  p_t=0
-  _upd=update_pturn
+    if iswalkable(destx,desty,"checkmobs") then
+        sfx(63)
+        mobwalk(p_mob,dx,dy)
+        p_t=0
+        _upd=update_pturn
+    else
+        --not walkable
+        mobbump(p_mob,dx,dy)
+        p_t=0
+        _upd=update_pturn
   
-  local mob=getmob(destx,desty)
-  if mob==false then
-   if fget(tle,1) then
-    trig_bump(tle,destx,desty)
-   end
-  else
-   sfx(58)
-   hitmob(p_mob,mob)
-  end
- end
+        local mob=getmob(destx,desty)
+
+        if mob==false then
+            if fget(tle,1) then
+                trig_bump(tle,destx,desty)
+            end
+        else
+            sfx(58)
+            hitmob(p_mob,mob)
+        end
+    end
 end
 
 function trig_bump(tle,destx,desty)
- if tle==7 or tle==8 then
-  --vase
-  sfx(59)
-  mset(destx,desty,1)
- elseif tle==10 or tle==12 then
-  --chest
-  sfx(61)
-  mset(destx,desty,tle-1)
- elseif tle==13 then
-  --door
-  sfx(62)
-  mset(destx,desty,1)
- elseif tle==6 then
-  --stone tablet
-  --showmsg("hello world",120)
-  if destx==2 and desty==5 then
-   showmsg({"welcome to porklike","","climb the tower","to obtain the","golden kielbasa"})
-  elseif destx==13 and desty==12 then
-   showmsg({"this is the 2nd message"})
-  elseif destx==13 and desty==6 then
-   showmsg({"you're almost there!"})
-  end
- end
+    if tle==7 or tle==8 then
+        --vase
+        sfx(59)
+        mset(destx,desty,1)
+    elseif tle==10 or tle==12 then
+        --chest
+        sfx(61)
+        mset(destx,desty,tle-1)
+    elseif tle==13 then
+        --door
+        sfx(62)
+        mset(destx,desty,1)
+    elseif tle==6 then
+    end
 end
 
 function getmob(x,y)
- for m in all(mob) do
-  if m.x==x and m.y==y then
-   return m
-  end
- end
- return false
+    for m in all(mob) do
+        if m.x==x and m.y==y then
+            return m
+        end
+    end
+
+    return false
 end
 
 function iswalkable(x,y,mode)
- if mode== nil then mode="" end
- if inbounds(x,y) then
-  local tle=mget(x,y)
-  if fget(tle,0)==false then
-   if mode=="checkmobs" then
-    return getmob(x,y)==false
-   end
-   return true
-  end
- end
- return false
+    if mode== nil then mode="" end
+        if inbounds(x,y) then
+            local tle=mget(x,y)
+            
+            if fget(tle,0)==false then
+                if mode=="checkmobs" then
+                    return getmob(x,y)==false
+                end
+            return true
+        end
+    end
+
+    return false
 end
 
 function inbounds(x,y)
- return not (x<0 or y<0 or x>64 or y>64)
+    return not (x<0 or y<0 or x>64 or y>64)
 end
 
 function hitmob(atkm,defm)
- local dmg=atkm.atk
- defm.hp-=dmg
- defm.flash=10
+    local dmg=atkm.atk
+    defm.hp-=dmg
+    defm.flash=10
  
- addfloat("-"..dmg,defm.x*8,defm.y*8,9)
+    addfloat("-"..dmg,defm.x*8,defm.y*8,9)
  
- if defm.hp<=0 then
-  add(dmob,defm)
-  del(mob,defm)
-  defm.dur=10
- end
+    if defm.hp<=0 then
+        add(dmob,defm)
+        del(mob,defm)
+        defm.dur=10
+    end
 end
 
 function checkend()
- if p_mob.hp<=0 then
-  wind={}
-  _upd=update_gameover
-  _drw=draw_gameover
-  return false
- end
- return true
+    if p_mob.hp<=0 then
+        wind={}
+        _upd=update_gameover
+        _drw=draw_gameover
+        return false
+    end
+
+    return true
 end
 
 function addfloat(_txt,_x,_y,_c)
- add(float,{txt=_txt,x=_x,y=_y,c=_c,ty=_y-10,t=0})
+    add(float,{txt=_txt,x=_x,y=_y,c=_c,ty=_y-10,t=0})
 end
 
 function dofloats()
- for f in all(float) do
-  f.y+=(f.ty-f.y)/10
-  f.t+=1
-  if f.t>70 then
-   del(float,f)
-  end
- end
+    for f in all(float) do
+        f.y+=(f.ty-f.y)/10
+        f.t+=1
+
+        if f.t>70 then
+            del(float,f)
+        end
+    end
 end
 
 --mobs
 
 function addmob(typ,mx,my)
- local m={
-  x=mx,
-  y=my,
-  ox=0,
-  oy=0,
-  sox=0,
-  soy=0,
-  flp=false,
-  mov=nil,
-  ani={},
-  flash=0,
-  hp=mob_hp[typ],
-  hpmax=mob_hp[typ],
-  atk=mob_atk[typ]
- }
- for i=0,3 do
-  add(m.ani,mob_ani[typ]+i)
- end
- add(mob,m)
- return m
+    local m={
+    x=mx,
+    y=my,
+    ox=0,
+    oy=0,
+    sox=0,
+    soy=0,
+    flp=false,
+    mov=nil,
+    ani={},
+    flash=0,
+    hp=mob_hp[typ],
+    hpmax=mob_hp[typ],
+    atk=mob_atk[typ]
+    }
+    for i=0,3 do
+        add(m.ani,mob_ani[typ]+i)
+    end
+
+    add(mob,m)
+    return m
 end
 
 function mobwalk(mb,dx,dy)
- mb.x+=dx --?
- mb.y+=dy
+    mb.x+=dx 
+    mb.y+=dy
 
- mobflip(mb,dx)
- mb.sox,mb.soy=-dx*8,-dy*8
- mb.ox,mb.oy=mb.sox,mb.soy
- mb.mov=mov_walk
+    mobflip(mb,dx)
+    mb.sox,mb.soy=-dx*8,-dy*8
+    mb.ox,mb.oy=mb.sox,mb.soy
+    mb.mov=mov_walk
 end
 
 function mobbump(mb,dx,dy)
- mobflip(mb,dx)
- mb.sox,mb.soy=dx*8,dy*8
- mb.ox,mb.oy=0,0
- mb.mov=mov_bump
+    mobflip(mb,dx)
+    mb.sox,mb.soy=dx*8,dy*8
+    mb.ox,mb.oy=0,0
+    mb.mov=mov_bump
 end
 
 function mobflip(mb,dx)
- if dx<0 then
-  mb.flp=true
- elseif dx>0 then
-  mb.flp=false   
- end
+    if dx<0 then
+        mb.flp=true
+    elseif dx>0 then
+        mb.flp=false   
+    end
 end
 
 
 function mov_walk(mob,at)
- mob.ox=mob.sox*(1-at)
- mob.oy=mob.soy*(1-at)
+    mob.ox=mob.sox*(1-at)
+    mob.oy=mob.soy*(1-at)
 end
 
 function mov_bump(mob,at)
- --★
- local tme=at 
- if at>0.5 then
-  tme=1-at
- end
- mob.ox=mob.sox*tme
- mob.oy=mob.soy*tme
+    --★
+    local tme=at 
+    if at>0.5 then
+        tme=1-at
+    end
+    mob.ox=mob.sox*tme
+    mob.oy=mob.soy*tme
 end
 
 function doai()
- --debug={}
- for m in all(mob) do
-  if m!=p_mob then
-   m.mov=nil
-   if dist(m.x,m.y,p_mob.x,p_mob.y)==1 then
-    --attack player
-    dx,dy=p_mob.x-m.x,p_mob.y-m.y
-    mobbump(m,dx,dy)
-    hitmob(m,p_mob)
-    sfx(57)
-   else
-    --move to player
-    local bdst,bx,by=999,0,0
-    for i=1,4 do
-     local dx,dy=dirx[i],diry[i]
-     local tx,ty=m.x+dx,m.y+dy
-     if iswalkable(tx,ty,"checkmobs") then
-      local dst=dist(tx,ty,p_mob.x,p_mob.y)
-      if dst<bdst then
-       bdst,bx,by=dst,dx,dy
-      end
-     end
+    --debug={}
+    for m in all(mob) do
+        if m!=p_mob then
+            m.mov=nil
+            if dist(m.x,m.y,p_mob.x,p_mob.y)==1 then
+            --attack player
+                dx,dy=p_mob.x-m.x,p_mob.y-m.y
+                mobbump(m,dx,dy)
+                hitmob(m,p_mob)
+                sfx(57)
+            else
+                local bdst,bx,by=999,0,0
+                --move to player
+                if(aimovement%2==0) then
+                    for i=1,4 do
+                        local dx,dy=dirx[i],diry[i]
+                        local tx,ty=m.x+dx,m.y+dy
+                            if iswalkable(tx,ty,"checkmobs") then
+                                local dst=dist(tx,ty,p_mob.x,p_mob.y)
+                                if dst<bdst then
+                                    bdst,bx,by=dst,dx,dy
+                                end
+                            end
+                    end
+                    aimovement=0
+                end
+                mobwalk(m,bx,by)
+                _upd=update_aiturn
+                p_t=0
+            end
+        end
     end
-    mobwalk(m,bx,by)
-    _upd=update_aiturn
-    p_t=0
-   end
-  end
- end
 end
 __gfx__
 0000000000000000606660603333333300000000000000004444444400ddd00000ddd0004a4aa4a44a4444a40000000000aaa00055555555a000000055555550
@@ -533,13 +535,13 @@ __gfx__
 0000000000000000666066603ccccc3300000000000000000004510000ddd00000ddd0004a4444a44a4444a466666660aaaaaaa051144445a0aa0aa055055050
 0000000000000000000000003333333300000000000000000004511000000000000000004a4444a44a4444a40000000000000000544444450000000000000000
 33333333000000000000000000000000000000000000000000000000100000000000006666600001000000000000000000000000000000000000000000000000
-33333333055055000000000000000000000000000000000099900000044ffffffffff6f111f6f440000000000000000000000000000000000000000000000000
-3333333358858850000000000000000000000000000000009a999999044f1111111111f000f1f440000000000000000000000000000000000000000000000000
-333333335888885000000000000000000000000000000000909aa9a9044f5555555555f000f5f440000000000000000000000000000000000000000000000000
-33333333588888500000000000000000000000000000000099900a0a044f4444444444fffff4f440000000000000000000000000000000000000000000000000
-333333330588850000000000000000000000000000000000aaa00000044f4444444444111114f440000000000000000000000000000000000000000000000000
-33333333005850000000000000000000000000000000000000000000044f4444444444555554f440000000000000000000000000000000000000000000000000
-33333333000500000000000000000000000000000000000000000000044f4444444444444444f440000000000000000000000000000000000000000000000000
+33333333022022000000000000000000000000000000000099900000044ffffffffff6f111f6f440000000000000000000000000000000000000000000000000
+3333333328828820000000000000000000000000000000009a999999044f1111111111f000f1f440000000000000000000000000000000000000000000000000
+333333332888882000000000000000000000000000000000909aa9a9044f5555555555f000f5f440000000000000000000000000000000000000000000000000
+33333333288888200000000000000000000000000000000099900a0a044f4444444444fffff4f440000000000000000000000000000000000000000000000000
+333333330288820000000000000000000000000000000000aaa00000044f4444444444111114f440000000000000000000000000000000000000000000000000
+33333333002820000000000000000000000000000000000000000000044f4444444444555554f440000000000000000000000000000000000000000000000000
+33333333000200000000000000000000000000000000000000000000044f4444444444444444f440000000000000000000000000000000000000000000000000
 11111111111111110000000000000000000000000000000000000000044f4444444444444444f440333333000033333300000000000000000000000000000000
 1111111111cc11110000000000000000000000000000000000000000044ffffffffffffffffff44033330033310033330000000000ccc0000000000000000000
 11111111111111110000000000000000000000000000000000000000044111111111111111111440330013333333003300ccc0000c0ccc0000ccc00000000000
@@ -653,7 +655,7 @@ __gfx__
 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
 __gff__
-0000010000000303030103010303020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000010000000303030103010303020000000000000000000000000000000000000000000000000000000101000000000000000000000000000001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
@@ -661,8 +663,8 @@ __map__
 1010031003101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
 1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
 1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
-1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
-1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
+10101010101010102a2b10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
+10101010101010103a3b10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
 1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
 1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
 1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010
