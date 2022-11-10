@@ -83,7 +83,7 @@ end
 
 function update_pturn()
     dobuttmem()
-    p_t=min(p_t+0.125,1)
+    p_t=min(p_t+0.175,1)
 
     p_mob.mov(p_mob,p_t)
  
@@ -228,9 +228,9 @@ function draw_heart()
     end
 end
 
-function draw_invbox_extended()
+function draw_invbox()
     local lootboxx=(topleftcornerx)*8
-    local lootboxy=(((topleftcornery+2)*8)-offset)
+    local lootboxy=(topleftcornery+2)*8
     --left white line
     line(lootboxx+16,lootboxy+128,lootboxx+16,lootboxy+81,7)
     --top white line
@@ -255,8 +255,8 @@ function draw_invbox_extended()
     print(offset,lootboxx+98,lootboxy+74,2)
 end
 
-function draw_invbox()
-    while (offset==25) do
+function draw_invbox_extended()
+    while (offset<25) do
         draw_invbox_extended()
         offset+=1
     end
